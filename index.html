@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yatırım Analiz</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f7fb;
+  color: #172033;
+}
+
+header {
+  background: #101828;
+  color: white;
+  padding: 22px 18px;
+  text-align: center;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 26px;
+}
+
+header p {
+  margin: 7px 0 0;
+  color: #b8c2d1;
+}
+
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 18px;
+}
+
+.card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 18px;
+  box-shadow: 0 4px 18px rgba(0,0,0,.07);
+}
+
+label {
+  display: block;
+  font-weight: bold;
+  margin-top: 13px;
+  margin-bottom: 6px;
+}
+
+input, select {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #d0d5dd;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 18px;
+  border: 0;
+  border-radius: 10px;
+  background: #1769e0;
+  color: white;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+button:active {
+  transform: scale(.98);
+}
+
+.score {
+  text-align: center;
+  font-size: 42px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.good {
+  color: #16803c;
+}
+
+.medium {
+  color: #b7791f;
+}
+
+.bad {
+  color: #c53030;
+}
+
+.result {
+  padding: 14px;
+  border-radius: 10px;
+  background: #f5f7fa;
+  margin-top: 10px;
+}
+
+.warning {
+  background: #fff4d6;
+  padding: 13px;
+  border-radius: 10px;
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+small {
+  color: #667085;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <h1>📊 Yatırım Analiz</h1>
+  <p>Şirketleri temel finansal verilerle incele</p>
+</header>
+
+<div class="container">
+
+<div class="card">
+
+<h2>Şirket Analizi</h2>
+
+<label>Şirket / Hisse Kodu</label>
+<input id="company" placeholder="Örn: TUPRS">
+
+<label>Yıllık Gelir (TL)</label>
+<input id="revenue" type="number" placeholder="Örn: 500000000000">
+
+<label>Net Kâr (TL)</label>
+<input id="profit" type="number" placeholder="Örn: 30000000000">
+
+<label>Toplam Borç (TL)</label>
+<input id="debt" type="number" placeholder="Örn: 100000000000">
+
+<label>Serbest Nakit Akışı (TL)</label>
+<input id="cash" type="number" placeholder="Örn: 15000000000">
+
+<label>Ar-Ge Harcaması (TL)</label>
+<input id="rd" type="number" placeholder="Örn: 5000000000">
+
+<label>Piyasa Değeri (TL)</label>
+<input id="market" type="number" placeholder="Örn: 300000000000">
+
+<button onclick="analyze()">🔍 Analiz Et</button>
+
+</div>
+
+<div class="card" id="result" style="display:none">
+
+<h2 id="companyName"></h2>
+
+<div id="score" class="score"></div>
+
+<div class="result">
+<b>📈 Kârlılık</b>
+<p id="profitResult"></p>
+</div>
+
+<div class="result">
+<b>💳 Borç Durumu</b>
+<p id="debtResult"></p>
+</div>
+
+<div class="result">
+<b>💰 Serbest Nakit Akışı</b>
+<p id="cashResult"></p>
+</div>
+
+<div class="result">
+<b>🔬 Ar-Ge</b>
+<p id="rdResult"></p>
+</div>
+
+<div class="result">
+<b>💎 Değerleme</b>
+<p id="valuationResult"></p>
+</div>
+
+<div class="result">
+<b>🏆 Genel Değerlendirme</b>
+<p id="overall"></p>
+</div>
+
+<div class="warning">
+⚠️ Bu uygulama yatırım tavsiyesi vermez. Sonuçlar yalnızca girilen finansal verilere göre oluşturulan basit bir analizdir.
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+function analyze() {
+
+  const company = document.getElementById("company").value || "Şirket";
+
+  const revenue = Number(document.getElementById("revenue").value);
+  const profit = Number(document.getElementById("profit").value);
+  const debt = Number(document.getElementById("debt").value);
+  const cash = Number(document.getElementById("cash").value);
+  const rd = Number(document.getElementById("rd").value);
+  const market = Number(document.getElementById("market").value);
+
+  if (!revenue || !profit || !market) {
+    alert("En azından gelir, net kâr ve piyasa değerini gir.");
+    return;
+  }
+
+  let score = 50;
+
+  const margin = (profit / revenue) * 100;
+  const debtRatio = (debt / revenue) * 100;
+  const rdRatio = (rd / revenue) * 100;
+  const pe = market / profit;
+
+  // Kârlılık
+  if (margin >= 20) score += 15;
+  else if (margin >= 10) score += 8;
+  else if (margin < 5) score -= 10;
+
+  // Borç
+  if (debtRatio < 20) score += 10;
+  else if (debtRatio > 60) score -= 12;
+
+  // Nakit akışı
+  if (cash > 0) score += 10;
+  else score -= 10;
+
+  // Ar-Ge
+  if (rdRatio >= 5) score += 5;
+  else if (rdRatio >= 2) score += 2;
+
+  // F/K
+  if (pe < 10) score += 8;
+  else if (pe > 30) score -= 8;
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  document.getElementById("result").style.display = "block";
+  document.getElementById("companyName").innerText =
+    "📊 " + company + " Analiz Sonucu";
+
+  const scoreElement = document.getElementById("score");
+  scoreElement.innerText = score + " / 100";
+
+  scoreElement.className = "score " +
+    (score >= 70 ? "good" : score >= 50 ? "medium" : "bad");
+
+  document.getElementById("profitResult").innerText =
+    "Net kâr marjı: %" + margin.toFixed(2);
+
+  document.getElementById("debtResult").innerText =
+    "Borç / gelir oranı: %" + debtRatio.toFixed(2);
+
+  document.getElementById("cashResult").innerText =
+    cash > 0
+      ? "Pozitif serbest nakit akışı."
+      : "Negatif serbest nakit akışı.";
+
+  document.getElementById("rdResult").innerText =
+    "Ar-Ge / gelir oranı: %" + rdRatio.toFixed(2);
+
+  document.getElementById("valuationResult").innerText =
+    "Basit F/K: " + pe.toFixed(2);
+
+  let overall = "";
+
+  if (score >= 80)
+    overall = "Finansal açıdan güçlü görünüyor.";
+  else if (score >= 65)
+    overall = "Genel
+      if (score >= 80) {
+    overall = "Finansal açıdan güçlü görünüyor.";
+} else if (score >= 65) {
+    overall = "Genel olarak olumlu görünüyor.";
+} else if (score >= 50) {
+    overall = "Orta seviyede, dikkatli incelenmeli.";
+} else {
+    overall = "Finansal açıdan riskli görünüyor.";
+}
+
+document.getElementById("overallResult").innerText = overal verall;
+if (score >= 80) {
+    overall = "Finansal açıdan güçlü görünüyor.";
+} else if (score >= 65) {
+    overall = "Genel olarak olumlu görünüyor.";
+} else if (score >= 50) {
+    overall = "Orta seviyede, dikkatli incelenmeli.";
+} else {
+    overall = "Finansal açıdan riskli görünüyor.";
+}
+
+document.getElementById("overallResult").innerText = overall;
